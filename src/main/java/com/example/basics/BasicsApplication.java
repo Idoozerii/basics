@@ -21,17 +21,6 @@ public class BasicsApplication {
     }
 
     @Bean
-    ApplicationListener<RefreshRoutesResultEvent> routeRefreshed() {
-        return rre -> {
-            System.out.println("route updated");
-
-            var crl = (CachingRouteLocator) rre.getSource();
-            Flux<Route> routes = crl.getRoutes();
-            routes.subscribe(System.out::println);
-        };
-    }
-
-    @Bean
     RouteLocator gateway(SetPathGatewayFilterFactory ff) {
         var singleRoute = Route.async()
                 .id("test-route")
@@ -47,6 +36,43 @@ public class BasicsApplication {
 
         return () -> Flux.just(singleRoute);
     }
+
+    @Bean
+    ApplicationListener<RefreshRoutesResultEvent> routeRefreshed() {
+        return rre -> {
+            System.out.println("route updated");
+
+            var crl = (CachingRouteLocator) rre.getSource();
+            Flux<Route> routes = crl.getRoutes();
+            routes.subscribe(System.out::println);
+        };
+    }
+
+//    // web socket - using refresh scope
+//
+//    private final AtomicBoolean webSocket = new AtomicBoolean(false);
+//
+//    @Bean
+//    @RefreshScope
+//    RouteLocator gateway(RouteLocatorBuilder rlb) {
+//        var id = "customers";
+//
+//        if (!this.webSocket.get()) {
+//            this.webSocket.set(true);
+//            return rlb.routes()
+//                    .route(id, routeSpec -> routeSpec
+//                            .path("/customers")
+//                            .uri("lb://customers"))
+//                    .build();
+//        } else {
+//            return rlb.routes()
+//                    .route(id, routeSpec -> routeSpec
+//                            .path("/customers")
+//                            .filters(fs -> fs.setPath("/ws/customers"))
+//                            .uri("lb://customers"))
+//                    .build();
+//        }
+//    }
 
 //    @Bean
 //    RouteLocator gateway(RouteLocatorBuilder rlb) {
